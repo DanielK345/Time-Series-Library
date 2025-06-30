@@ -11,7 +11,7 @@ from utils.print_args import print_args
 import random
 import numpy as np
 
-if __name__ == '__main__':
+def main():
     fix_seed = 2021
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
@@ -173,6 +173,7 @@ if __name__ == '__main__':
     else:
         Exp = Exp_Long_Term_Forecast
 
+    trained_model = None
     if args.is_training:
         for ii in range(args.itr):
             # setting record of experiments
@@ -199,7 +200,7 @@ if __name__ == '__main__':
                 args.des, ii)
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
-            exp.train(setting)
+            trained_model = exp.train(setting)
 
             print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
             exp.test(setting)
@@ -207,6 +208,7 @@ if __name__ == '__main__':
                 torch.backends.mps.empty_cache()
             elif args.gpu_type == 'cuda':
                 torch.cuda.empty_cache()
+        return trained_model
     else:
         exp = Exp(args)  # set experiments
         ii = 0
@@ -237,3 +239,7 @@ if __name__ == '__main__':
             torch.backends.mps.empty_cache()
         elif args.gpu_type == 'cuda':
             torch.cuda.empty_cache()
+        return exp.model
+
+if __name__ == '__main__':
+    main()
