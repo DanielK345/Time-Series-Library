@@ -7,11 +7,12 @@ from exp.exp_imputation import Exp_Imputation
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_anomaly_detection import Exp_Anomaly_Detection
 from exp.exp_classification import Exp_Classification
+from exp.xPatch.exp_main import Exp_Main  # Added for xPatch
 from utils.print_args import print_args
 import random
 import numpy as np
 
-if __name__ == '__main__':
+def main(args=None):
     fix_seed = 2021
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
@@ -20,15 +21,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='TimesNet')
 
     # basic config
-    parser.add_argument('--task_name', type=str, required=True, default='long_term_forecast',
+    parser.add_argument('--task_name', type=str,  default='long_term_forecast',
                         help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
-    parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
-    parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='Autoformer',
-                        help='model name, options: [Autoformer, Transformer, TimesNet]')
+    parser.add_argument('--is_training', type=int,  default=1, help='status')
+    parser.add_argument('--model_id', type=str,  default='test', help='model id')
+    parser.add_argument('--model', type=str,  default='Autoformer',
+                        help='model name, options: [Autoformer, Transformer, TimesNet, xPatch]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='ETTh1', help='dataset type')
+    parser.add_argument('--data', type=str,  default='ETTh1', help='dataset type')
     parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
     parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
     parser.add_argument('--features', type=str, default='M',
@@ -140,7 +141,38 @@ if __name__ == '__main__':
     # TimeXer
     parser.add_argument('--patch_len', type=int, default=16, help='patch length')
 
-    args = parser.parse_args()
+    # xPatch-specific arguments (add if not already present)
+    parser.add_argument('--stride', type=int, default=8, help='stride (xPatch)')
+    parser.add_argument('--padding_patch', default='end', help='None: None; end: padding on the end (xPatch)')
+    parser.add_argument('--ma_type', type=str, default='ema', help='reg, ema, dema (xPatch)')
+    parser.add_argument('--alpha', type=float, default=0.3, help='alpha (xPatch)')
+    parser.add_argument('--beta', type=float, default=0.3, help='beta (xPatch)')
+    parser.add_argument('--revin', type=int, default=1, help='RevIN; True 1 False 0 (xPatch)')
+    # xPatch uses --train_only, but it's not in run.py, so add it
+    parser.add_argument('--train_only', type=bool, required=False, default=False, help='perform training on full input dataset without validation and testing (xPatch)')
+
+    # Always parse defaults first
+    default_args = parser.parse_args([])
+
+    # If args is provided, update only the specified fields
+    if args is not None:
+        # If args is a dict, update default_args
+        if isinstance(args, dict):
+            for k, v in args.items():
+                if hasattr(default_args, k):
+                    setattr(default_args, k, v)
+        # If args is a Namespace, update default_args
+        elif isinstance(args, argparse.Namespace):
+            for k, v in vars(args).items():
+                if hasattr(default_args, k):
+                    setattr(default_args, k, v)
+        else:
+            raise ValueError('args must be a dict or argparse.Namespace')
+        args = default_args
+    else:
+        # Parse from command line
+        args = parser.parse_args()
+
     if torch.cuda.is_available() and args.use_gpu:
         args.device = torch.device('cuda:{}'.format(args.gpu))
         print('Using GPU')
@@ -159,7 +191,7 @@ if __name__ == '__main__':
 
     print('Args in experiment:')
     print_args(args)
-
+    
     if args.task_name == 'long_term_forecast':
         Exp = Exp_Long_Term_Forecast
     elif args.task_name == 'short_term_forecast':
@@ -173,6 +205,7 @@ if __name__ == '__main__':
     else:
         Exp = Exp_Long_Term_Forecast
 
+    trained_model = None
     if args.is_training:
         for ii in range(args.itr):
             # setting record of experiments
@@ -199,7 +232,7 @@ if __name__ == '__main__':
                 args.des, ii)
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
-            exp.train(setting)
+            trained_model = exp.train(setting)
 
             print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
             exp.test(setting)
@@ -207,6 +240,7 @@ if __name__ == '__main__':
                 torch.backends.mps.empty_cache()
             elif args.gpu_type == 'cuda':
                 torch.cuda.empty_cache()
+        return trained_model
     else:
         exp = Exp(args)  # set experiments
         ii = 0
@@ -237,3 +271,7 @@ if __name__ == '__main__':
             torch.backends.mps.empty_cache()
         elif args.gpu_type == 'cuda':
             torch.cuda.empty_cache()
+        return exp.model
+
+if __name__ == '__main__':
+    main()
