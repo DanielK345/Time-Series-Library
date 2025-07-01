@@ -36,7 +36,7 @@ class Model(nn.Module):
         # self.net_mlp = NetworkMLP(seq_len, pred_len) # For ablation study with MLP-only stream
         # self.net_cnn = NetworkCNN(seq_len, pred_len, patch_len, stride, padding_patch) # For ablation study with CNN-only stream
 
-    def forward(self, x):
+    def forward(self, x, x_mark, x_dec, x_dec_mark):
         # x: [Batch, Input, Channel]
 
         # Normalization
