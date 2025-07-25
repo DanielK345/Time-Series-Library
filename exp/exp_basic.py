@@ -3,7 +3,7 @@ import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
     Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer, \
-    WPMixer, MultiPatchFormer, xPatch
+    WPMixer, MultiPatchFormer, xPatch, CATS
 
 
 class Exp_Basic(object):
@@ -13,6 +13,7 @@ class Exp_Basic(object):
             'TimesNet': TimesNet,
             'Autoformer': Autoformer,
             'Transformer': Transformer,
+            'CATS': CATS,
             'Nonstationary_Transformer': Nonstationary_Transformer,
             'DLinear': DLinear,
             'FEDformer': FEDformer,
