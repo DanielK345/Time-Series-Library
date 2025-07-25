@@ -5,7 +5,7 @@ model_name=Transformer
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
+  --root_path ../dataset/ETT-small/ \
   --data_path ETTm2.csv \
   --model_id ETTm2_mask_0.125 \
   --mask_rate 0.125 \
@@ -32,7 +32,7 @@ python -u run.py \
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
+  --root_path ../dataset/ETT-small/ \
   --data_path ETTm2.csv \
   --model_id ETTm2_mask_0.25 \
   --mask_rate 0.25 \
@@ -59,7 +59,7 @@ python -u run.py \
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
+  --root_path ../dataset/ETT-small/ \
   --data_path ETTm2.csv \
   --model_id ETTm2_mask_0.375 \
   --mask_rate 0.375 \
@@ -86,7 +86,7 @@ python -u run.py \
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/ETT-small/ \
+  --root_path ../dataset/ETT-small/ \
   --data_path ETTm2.csv \
   --model_id ETTm2_mask_0.5 \
   --mask_rate 0.5 \

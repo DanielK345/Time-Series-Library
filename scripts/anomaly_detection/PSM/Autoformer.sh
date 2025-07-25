@@ -1,9 +1,9 @@
-export CUDA_VISIBLE_DEVICES=6
+export CUDA_VISIBLE_DEVICES=0
 
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/PSM \
+  --root_path ../dataset/PSM \
   --model_id PSM \
   --model Autoformer \
   --data PSM \

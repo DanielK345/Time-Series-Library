@@ -8,7 +8,7 @@ patch_len=24
 python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
-  --root_path ./dataset/EPF/ \
+  --root_path ../dataset/EPF/ \
   --data_path NP.csv \
   --model_id NP_168_24 \
   --model $model_name \
@@ -30,7 +30,7 @@ python -u run.py \
 python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
-  --root_path ./dataset/EPF/ \
+  --root_path ../dataset/EPF/ \
   --data_path PJM.csv \
   --model_id PJM_168_24 \
   --model $model_name \
@@ -51,7 +51,7 @@ python -u run.py \
 python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
-  --root_path ./dataset/EPF/ \
+  --root_path ../dataset/EPF/ \
   --data_path BE.csv \
   --model_id BE_168_24 \
   --model $model_name \
@@ -74,7 +74,7 @@ python -u run.py \
 python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
-  --root_path ./dataset/EPF/ \
+  --root_path ../dataset/EPF/ \
   --data_path FR.csv \
   --model_id FR_168_24 \
   --model $model_name \
@@ -95,7 +95,7 @@ python -u run.py \
 python -u run.py \
   --is_training 1 \
   --task_name long_term_forecast \
-  --root_path ./dataset/EPF/ \
+  --root_path ../dataset/EPF/ \
   --data_path DE.csv \
   --model_id DE_168_24 \
   --model $model_name \

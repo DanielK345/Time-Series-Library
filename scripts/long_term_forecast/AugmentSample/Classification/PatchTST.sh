@@ -9,7 +9,7 @@ echo using augmentation: ${aug}
 python -u run.py \
   --task_name classification \
   --is_training 1 \
-  --root_path ./dataset/EthanolConcentration/ \
+  --root_path ../dataset/EthanolConcentration/ \
   --model_id EthanolConcentration \
   --model $model_name \
   --data UEA \

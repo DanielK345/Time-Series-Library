@@ -8,7 +8,7 @@ do
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/weather/ \
+  --root_path ../dataset/weather/ \
   --data_path weather.csv \
   --model_id weather_$seq_len'_'$pred_len \
   --model $model_name \

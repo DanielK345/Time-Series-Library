@@ -1,11 +1,11 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 model_name=Koopa
 
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_96_48 \
   --model $model_name \
@@ -26,7 +26,7 @@ python -u run.py \
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_192_96 \
   --model $model_name \
@@ -47,7 +47,7 @@ python -u run.py \
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_288_144 \
   --model $model_name \
@@ -68,7 +68,7 @@ python -u run.py \
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_384_192 \
   --model $model_name \

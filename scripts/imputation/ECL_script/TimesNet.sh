@@ -1,11 +1,11 @@
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=0
 
 model_name=TimesNet
 
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_mask_0.125 \
   --mask_rate 0.125 \
@@ -32,7 +32,7 @@ python -u run.py \
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_mask_0.25 \
   --mask_rate 0.25 \
@@ -59,7 +59,7 @@ python -u run.py \
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_mask_0.375 \
   --mask_rate 0.375 \
@@ -86,7 +86,7 @@ python -u run.py \
 python -u run.py \
   --task_name imputation \
   --is_training 1 \
-  --root_path ./dataset/electricity/ \
+  --root_path ../dataset/electricity/ \
   --data_path electricity.csv \
   --model_id ECL_mask_0.5 \
   --mask_rate 0.5 \

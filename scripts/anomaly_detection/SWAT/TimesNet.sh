@@ -1,9 +1,9 @@
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -23,7 +23,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -43,7 +43,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -63,7 +63,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -83,7 +83,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -103,7 +103,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -123,7 +123,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \
@@ -143,7 +143,7 @@ python -u run.py \
 python -u run.py \
   --task_name anomaly_detection \
   --is_training 1 \
-  --root_path ./dataset/SWaT \
+  --root_path ../dataset/SWaT \
   --model_id SWAT \
   --model TimesNet \
   --data SWAT \

@@ -10,7 +10,7 @@ echo using augmentation: ${aug}
 python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
-  --root_path ./dataset/exchange_rate/ \
+  --root_path ../dataset/exchange_rate/ \
   --data_path exchange_rate.csv \
   --model_id Exchange_96_${pred_len} \
   --model $model_name \
