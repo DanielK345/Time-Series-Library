@@ -232,10 +232,15 @@ def main(args=None):
                 args.des, ii)
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
-            trained_model = exp.train(setting)
+            if args.task_name == 'long_term_forecast' or args.task_name == 'short_term_forecast':
+                trained_model, params_log_scale, peak_memory_gb, avg_iter_time = exp.train(setting)
+                print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+                exp.test(setting, params_log_scale, peak_memory_gb, avg_iter_time)
+            else:
+                trained_model = exp.train(setting)
+                print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+                exp.test(setting)
 
-            print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-            exp.test(setting)
             if args.gpu_type == 'mps':
                 torch.backends.mps.empty_cache()
             elif args.gpu_type == 'cuda':

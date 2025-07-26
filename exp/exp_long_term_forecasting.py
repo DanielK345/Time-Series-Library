@@ -78,11 +78,15 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         vali_data, vali_loader = self._get_data(flag='val')
         test_data, test_loader = self._get_data(flag='test')
 
-        path = os.path.join(self.args.checkpoints, setting)
-        if not os.path.exists(path):
-            os.makedirs(path)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
 
-        time_now = time.time()
+        path = os.path.join(self.args.checkpoints, setting)
+        os.makedirs(path, exist_ok=True)
+
+        # === PARAMETER EFFICIENCY ===
+        params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        params_log_scale = np.log10(params)
 
         train_steps = len(train_loader)
         early_stopping = EarlyStopping(patience=self.args.patience, verbose=True)
@@ -93,6 +97,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         if self.args.use_amp:
             scaler = torch.cuda.amp.GradScaler()
 
+        # === MEMORY AND TIME PROFILING SETUP ===
+        torch.cuda.reset_peak_memory_stats(device)
+        total_iter_time = 0
+        total_iters = 0
+
         for epoch in range(self.args.train_epochs):
             iter_count = 0
             train_loss = []
@@ -101,42 +110,37 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             epoch_time = time.time()
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
                 iter_count += 1
+                total_iters += 1
+
                 model_optim.zero_grad()
-                batch_x = batch_x.float().to(self.device)
-                batch_y = batch_y.float().to(self.device)
-                batch_x_mark = batch_x_mark.float().to(self.device)
-                batch_y_mark = batch_y_mark.float().to(self.device)
+                batch_x = batch_x.float().to(device)
+                batch_y = batch_y.float().to(device)
+                batch_x_mark = batch_x_mark.float().to(device)
+                batch_y_mark = batch_y_mark.float().to(device)
 
                 # decoder input
                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
-                dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
+                dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).to(device)
 
-                # encoder - decoder
+                # === TIME START ===
+                torch.cuda.synchronize()
+                iter_start_time = time.time()
+
                 if self.args.use_amp:
                     with torch.cuda.amp.autocast():
                         outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
-
                         f_dim = -1 if self.args.features == 'MS' else 0
                         outputs = outputs[:, -self.args.pred_len:, f_dim:]
-                        batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
+                        batch_y = batch_y[:, -self.args.pred_len:, f_dim:]
                         loss = criterion(outputs, batch_y)
                         train_loss.append(loss.item())
                 else:
                     outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
-
                     f_dim = -1 if self.args.features == 'MS' else 0
                     outputs = outputs[:, -self.args.pred_len:, f_dim:]
-                    batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
+                    batch_y = batch_y[:, -self.args.pred_len:, f_dim:]
                     loss = criterion(outputs, batch_y)
                     train_loss.append(loss.item())
-
-                if (i + 1) % 100 == 0:
-                    print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
-                    speed = (time.time() - time_now) / iter_count
-                    left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
-                    print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
-                    iter_count = 0
-                    time_now = time.time()
 
                 if self.args.use_amp:
                     scaler.scale(loss).backward()
@@ -146,7 +150,20 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                     loss.backward()
                     model_optim.step()
 
+                # === TIME END ===
+                torch.cuda.synchronize()
+                iter_end_time = time.time()
+                total_iter_time += (iter_end_time - iter_start_time)
+
+                if (i + 1) % 100 == 0:
+                    print("\titers: {0}, epoch: {1} | loss: {2:.7f}".format(i + 1, epoch + 1, loss.item()))
+                    speed = (iter_end_time - iter_start_time)
+                    left_time = speed * ((self.args.train_epochs - epoch - 1) * train_steps + train_steps - i - 1)
+                    print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
+                    iter_count = 0
+
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
+
             train_loss = np.average(train_loss)
             vali_loss = self.vali(vali_data, vali_loader, criterion)
             test_loss = self.vali(test_data, test_loader, criterion)
@@ -160,12 +177,19 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
             adjust_learning_rate(model_optim, epoch + 1, self.args)
 
-        best_model_path = path + '/' + 'checkpoint.pth'
+        # === POST-TRAINING METRICS ===
+        best_model_path = os.path.join(path, 'checkpoint.pth')
         self.model.load_state_dict(torch.load(best_model_path))
 
-        return self.model
+        # Final memory and runtime profiling
+        peak_memory_gb = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
+        avg_iter_time = total_iter_time / total_iters if total_iters > 0 else 0
 
-    def test(self, setting, test=0):
+        return self.model, params_log_scale, peak_memory_gb, avg_iter_time
+
+
+
+    def test(self, setting, params_log_scale, peak_memory_gb, avg_iter_time, test=0):
         test_data, test_loader = self._get_data(flag='test')
         if test:
             print('loading model')
@@ -256,7 +280,13 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         print('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
         f = open("result_long_term_forecast.txt", 'a')
         f.write(setting + "  \n")
-        f.write('mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
+        f.write('Peformance efficiency: mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
+        f.write('\n')
+        f.write('Parameter efficiency: params_log_scale:{}'.format(params_log_scale))   
+        f.write('\n')
+        f.write('Memory efficiency: peak_memory_gb:{}'.format(peak_memory_gb))
+        f.write('\n')
+        f.write('Running time efficiency: avg_iter_time:{}'.format(avg_iter_time))
         f.write('\n')
         f.write('\n')
         f.close()

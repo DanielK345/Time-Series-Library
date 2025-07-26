@@ -58,6 +58,9 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         if not os.path.exists(path):
             os.makedirs(path)
 
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
+
         time_now = time.time()
 
         train_steps = len(train_loader)
@@ -66,6 +69,12 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         model_optim = self._select_optimizer()
         criterion = self._select_criterion(self.args.loss)
         mse = nn.MSELoss()
+
+        params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+        params_log_scale = np.log10(params)
+
+        total_iter_time = 0
+        total_iters = 0
 
         for epoch in range(self.args.train_epochs):
             iter_count = 0
@@ -107,6 +116,8 @@ class Exp_Short_Term_Forecast(Exp_Basic):
 
                 loss.backward()
                 model_optim.step()
+                total_iter_time += (time.time() - time_now)
+                total_iters += 1
 
             print("Epoch: {} cost time: {}".format(epoch + 1, time.time() - epoch_time))
             train_loss = np.average(train_loss)
@@ -124,7 +135,10 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
 
-        return self.model
+        peak_memory_gb = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
+        avg_iter_time = total_iter_time / total_iters if total_iters > 0 else 0
+
+        return self.model, params_log_scale, peak_memory_gb, avg_iter_time
 
     def vali(self, train_loader, vali_loader, criterion):
         x, _ = train_loader.dataset.last_insample_window()
@@ -157,12 +171,12 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         self.model.train()
         return loss
 
-    def test(self, setting, test=0):
+    def test(self, setting, params_log_scale, peak_memory_gb, avg_iter_time, test=0):
         _, train_loader = self._get_data(flag='train')
         _, test_loader = self._get_data(flag='test')
         x, _ = train_loader.dataset.last_insample_window()
         y = test_loader.dataset.timeseries
-        x = torch.tensor(x, dtype=torch.float32).to(self.device)
+        x = torch.tensor(x, dtype=torch.float32).to(self.device)        
         x = x.unsqueeze(-1)
 
         if test:
@@ -230,6 +244,12 @@ class Exp_Short_Term_Forecast(Exp_Basic):
             print('mape:', mape)
             print('mase:', mase)
             print('owa:', owa_results)
+            f = open("result_short_term_forecast.txt", 'a')
+            f.write(setting + "  \n")
+            f.write('Peformance efficiency: smape:{}, mape:{}, mase:{}, owa:{}'.format(smape_results, mape, mase, owa_results))
+            f.write('\n')
+            f.write('Parameter efficiency: params_log_scale:{}'.format(params_log_scale))   
+            f.write('\n')
         else:
             print('After all 6 tasks are finished, you can calculate the averaged index')
         return
