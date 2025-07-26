@@ -135,10 +135,10 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         best_model_path = path + '/' + 'checkpoint.pth'
         self.model.load_state_dict(torch.load(best_model_path))
 
-        peak_memory_gb = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
+        total_memory_gb = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
         avg_iter_time = total_iter_time / total_iters if total_iters > 0 else 0
 
-        return self.model, params_log_scale, peak_memory_gb, avg_iter_time
+        return self.model, params_log_scale, total_memory_gb, avg_iter_time
 
     def vali(self, train_loader, vali_loader, criterion):
         x, _ = train_loader.dataset.last_insample_window()
@@ -171,7 +171,7 @@ class Exp_Short_Term_Forecast(Exp_Basic):
         self.model.train()
         return loss
 
-    def test(self, setting, params_log_scale, peak_memory_gb, avg_iter_time, test=0):
+    def test(self, setting, params_log_scale, total_memory_gb, avg_iter_time, test=0):
         _, train_loader = self._get_data(flag='train')
         _, test_loader = self._get_data(flag='test')
         x, _ = train_loader.dataset.last_insample_window()

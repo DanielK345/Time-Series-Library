@@ -89,9 +89,9 @@ def main(args=None):
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
-    parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
+    parser.add_argument('--train_epochs', type=int, default=30, help='train epochs')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
-    parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
+    parser.add_argument('--patience', type=int, default=15, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
@@ -233,9 +233,9 @@ def main(args=None):
 
             print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
             if args.task_name == 'long_term_forecast' or args.task_name == 'short_term_forecast':
-                trained_model, params_log_scale, peak_memory_gb, avg_iter_time = exp.train(setting)
+                trained_model, params_log_scale, total_memory_gb, avg_iter_time = exp.train(setting)
                 print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-                exp.test(setting, params_log_scale, peak_memory_gb, avg_iter_time)
+                exp.test(setting, params_log_scale, total_memory_gb, avg_iter_time)
             else:
                 trained_model = exp.train(setting)
                 print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))

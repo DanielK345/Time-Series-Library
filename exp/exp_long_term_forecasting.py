@@ -182,14 +182,14 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         self.model.load_state_dict(torch.load(best_model_path))
 
         # Final memory and runtime profiling
-        peak_memory_gb = torch.cuda.max_memory_allocated(device) / (1024 ** 3)
+        total_memory_gb = torch.cuda.memory_reserved(device) / (1024 ** 3)
         avg_iter_time = total_iter_time / total_iters if total_iters > 0 else 0
 
-        return self.model, params_log_scale, peak_memory_gb, avg_iter_time
+        return self.model, params_log_scale, total_memory_gb, avg_iter_time
 
 
 
-    def test(self, setting, params_log_scale, peak_memory_gb, avg_iter_time, test=0):
+    def test(self, setting, params_log_scale, total_memory_gb, avg_iter_time, test=0):
         test_data, test_loader = self._get_data(flag='test')
         if test:
             print('loading model')
@@ -282,11 +282,11 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         f.write(setting + "  \n")
         f.write('Peformance efficiency: mse:{}, mae:{}, dtw:{}'.format(mse, mae, dtw))
         f.write('\n')
-        f.write('Parameter efficiency: params_log_scale:{}'.format(params_log_scale))   
+        f.write('Parameter efficiency (log10 scale): {}'.format(params_log_scale))   
         f.write('\n')
-        f.write('Memory efficiency: peak_memory_gb:{}'.format(peak_memory_gb))
+        f.write('Memory efficiency (total GB used): {}'.format(total_memory_gb))
         f.write('\n')
-        f.write('Running time efficiency: avg_iter_time:{}'.format(avg_iter_time))
+        f.write('Running time efficiency (avg s/itr): {}'.format(avg_iter_time))
         f.write('\n')
         f.write('\n')
         f.close()
