@@ -250,6 +250,7 @@ class Exp_Short_Term_Forecast(Exp_Basic):
             f.write('\n')
             f.write('Parameter efficiency: params_log_scale:{}'.format(params_log_scale))   
             f.write('\n')
+            
         else:
             print('After all 6 tasks are finished, you can calculate the averaged index')
         return
